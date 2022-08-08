@@ -1,0 +1,649 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "from sklearn.model_selection import cross_val_score, train_test_split\n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "from sklearn.metrics import accuracy_score,f1_score,confusion_matrix\n",
+    "from sklearn.model_selection import GridSearchCV\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dataset = pd.read_csv('Dataset.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>gre_score</th>\n",
+       "      <th>gre_score_quant</th>\n",
+       "      <th>gre_score_verbal</th>\n",
+       "      <th>test_score_toefl</th>\n",
+       "      <th>undergraduation_score</th>\n",
+       "      <th>work_ex</th>\n",
+       "      <th>papers_published</th>\n",
+       "      <th>university_name</th>\n",
+       "      <th>status</th>\n",
+       "      <th>ranking</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>316</td>\n",
+       "      <td>164</td>\n",
+       "      <td>152</td>\n",
+       "      <td>106.0</td>\n",
+       "      <td>2.90</td>\n",
+       "      <td>9</td>\n",
+       "      <td>3</td>\n",
+       "      <td>northeastern_university</td>\n",
+       "      <td>accept</td>\n",
+       "      <td>15</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>314</td>\n",
+       "      <td>163</td>\n",
+       "      <td>151</td>\n",
+       "      <td>114.0</td>\n",
+       "      <td>3.53</td>\n",
+       "      <td>7</td>\n",
+       "      <td>3</td>\n",
+       "      <td>northeastern_university</td>\n",
+       "      <td>accept</td>\n",
+       "      <td>15</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>307</td>\n",
+       "      <td>160</td>\n",
+       "      <td>147</td>\n",
+       "      <td>88.0</td>\n",
+       "      <td>3.00</td>\n",
+       "      <td>36</td>\n",
+       "      <td>0</td>\n",
+       "      <td>northeastern_university</td>\n",
+       "      <td>accept</td>\n",
+       "      <td>15</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>330</td>\n",
+       "      <td>169</td>\n",
+       "      <td>161</td>\n",
+       "      <td>113.0</td>\n",
+       "      <td>2.40</td>\n",
+       "      <td>48</td>\n",
+       "      <td>3</td>\n",
+       "      <td>northeastern_university</td>\n",
+       "      <td>accept</td>\n",
+       "      <td>15</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>316</td>\n",
+       "      <td>163</td>\n",
+       "      <td>153</td>\n",
+       "      <td>99.0</td>\n",
+       "      <td>2.71</td>\n",
+       "      <td>30</td>\n",
+       "      <td>0</td>\n",
+       "      <td>northeastern_university</td>\n",
+       "      <td>accept</td>\n",
+       "      <td>15</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   gre_score  gre_score_quant  gre_score_verbal  test_score_toefl  \\\n",
+       "0        316              164               152             106.0   \n",
+       "1        314              163               151             114.0   \n",
+       "2        307              160               147              88.0   \n",
+       "3        330              169               161             113.0   \n",
+       "4        316              163               153              99.0   \n",
+       "\n",
+       "   undergraduation_score  work_ex  papers_published          university_name  \\\n",
+       "0                   2.90        9                 3  northeastern_university   \n",
+       "1                   3.53        7                 3  northeastern_university   \n",
+       "2                   3.00       36                 0  northeastern_university   \n",
+       "3                   2.40       48                 3  northeastern_university   \n",
+       "4                   2.71       30                 0  northeastern_university   \n",
+       "\n",
+       "   status  ranking  \n",
+       "0  accept       15  \n",
+       "1  accept       15  \n",
+       "2  accept       15  \n",
+       "3  accept       15  \n",
+       "4  accept       15  "
+      ]
+     },
+     "execution_count": 26,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "dataset.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "northeastern_university                        1653\n",
+       "state_university_of_new_york_at_stony_brook     602\n",
+       "north_carolina_state_university_raleigh         588\n",
+       "syracuse_university                             518\n",
+       "university_of_texas_dallas                      474\n",
+       "illinois_institute_of_technology                435\n",
+       "university_of_california_irvine                 400\n",
+       "texas_a_m_university_college_station            387\n",
+       "university_of_north_carolina_at_charlotte       380\n",
+       "indiana_university_bloomington                  343\n",
+       "university_of_colorado_boulder                  341\n",
+       "rochester_institute_of_technology               341\n",
+       "new_york_university                             318\n",
+       "university_of_texas_arlington                   312\n",
+       "rutgers_university_new_brunswick                304\n",
+       "george_mason_university                         264\n",
+       "university_of_maryland_college_park             264\n",
+       "university_of_cincinnati                        242\n",
+       "university_of_texas_austin                      233\n",
+       "carnegie_mellon_university                      162\n",
+       "michigan_technological_university               138\n",
+       "georgia_institiute_of_technology                127\n",
+       "clemson_university                              122\n",
+       "university_of_florida                            95\n",
+       "kansas_state_university                          76\n",
+       "worcester_polytechnic_institute                  70\n",
+       "university_of_connecticut                        64\n",
+       "university_of_iowa                               59\n",
+       "university_of_southern_california                38\n",
+       "Name: university_name, dtype: int64"
+      ]
+     },
+     "execution_count": 27,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "dataset.university_name.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "target_universities=dataset.university_name.unique().tolist()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.utils import resample"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "resampled_dfs=[]\n",
+    "resampled_df = pd.DataFrame()\n",
+    "for each in target_universities:\n",
+    "    if dataset[(dataset.university_name==each )].shape[0]> 600:\n",
+    "        \n",
+    "        resampled_dfs.append(resample(dataset[(dataset.university_name==each )&(dataset.status=='accept')],replace=True,n_samples=300,random_state=123))\n",
+    "        resampled_dfs.append(resample(dataset[(dataset.university_name==each) &(dataset.status=='reject')],replace=True,n_samples=300,random_state=123))\n",
+    "        \n",
+    "    elif dataset[(dataset.university_name==each )].shape[0] < 200:\n",
+    "        resampled_dfs.append(resample(dataset[(dataset.university_name==each )&(dataset.status=='accept')],replace=True,n_samples=125,random_state=123))\n",
+    "        resampled_dfs.append(resample(dataset[(dataset.university_name==each) &(dataset.status=='reject')],replace=True,n_samples=125,random_state=123))\n",
+    "    else:\n",
+    "        resampled_dfs.append(dataset[(dataset.university_name==each )&(dataset.status=='accept')])\n",
+    "        resampled_dfs.append(dataset[(dataset.university_name==each )&(dataset.status=='reject')])\n",
+    "        \n",
+    "\n",
+    "resampled_df = pd.concat( [ f for f in resampled_dfs ] )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "      gre_score  gre_score_quant  gre_score_verbal  test_score_toefl  \\\n",
+      "4603        314              168               146             109.0   \n",
+      "7734        300              151               149             101.0   \n",
+      "828         306              163               143             101.0   \n",
+      "5472        313              164               149             108.0   \n",
+      "6108        309              161               148             106.0   \n",
+      "\n",
+      "      undergraduation_score  work_ex  papers_published  \\\n",
+      "4603                   3.26       13                 0   \n",
+      "7734                   2.72       32                 0   \n",
+      "828                    2.38       45                 0   \n",
+      "5472                   2.35       21                 0   \n",
+      "6108                   2.10       53                 0   \n",
+      "\n",
+      "                                  university_name  status  ranking  \n",
+      "4603            rochester_institute_of_technology  accept       66  \n",
+      "7734    university_of_north_carolina_at_charlotte  reject       30  \n",
+      "828                            clemson_university  reject       89  \n",
+      "5472  state_university_of_new_york_at_stony_brook  reject       35  \n",
+      "6108                          syracuse_university  reject      118  \n"
+     ]
+    }
+   ],
+   "source": [
+    "training, testing = train_test_split(dataset, test_size=0.25, random_state=5, stratify=dataset[['university_name', 'status']])\n",
+    "print(testing[0:5])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "['gre_score' 'gre_score_quant' 'gre_score_verbal' 'test_score_toefl'\n",
+      " 'undergraduation_score' 'work_ex' 'papers_published' 'ranking']\n"
+     ]
+    }
+   ],
+   "source": [
+    "numerical_data = training.select_dtypes(include = ['int64','float','uint8'])\n",
+    "categorical_data = training.select_dtypes(include = ['object'])\n",
+    "categorical_features = categorical_data.columns.values\n",
+    "numerical_features = numerical_data.columns.values\n",
+    "numerical_features\n",
+    "print(numerical_features)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def get_result(model, X_train, X_test, Y_train, Y_test):\n",
+    "    print(X_test[0:5])\n",
+    "    sc = StandardScaler() \n",
+    "    sc.fit(X_train)\n",
+    "    X_train = sc.transform(X_train)\n",
+    "    X_test = sc.transform(X_test) \n",
+    "    model.fit(X_train, Y_train)\n",
+    "   \n",
+    "    y_pred = model.predict(X_test)\n",
+    "    y_train_pred = model.predict(X_train)\n",
+    "    prob_test=pd.DataFrame(model.predict_proba(X_test))\n",
+    "    prob_train=pd.DataFrame(model.predict_proba(X_train))\n",
+    "    test_f1_score = f1_score(Y_test, y_pred,pos_label='accept')\n",
+    "    train_f1_score = f1_score(Y_train, y_train_pred,pos_label='accept')\n",
+    "    train_accuracy=accuracy_score(Y_train, y_train_pred)\n",
+    "    test_accuracy=accuracy_score(Y_test, y_pred)\n",
+    "    test_cm = confusion_matrix(Y_test, y_pred,labels=['accept','reject'])\n",
+    "    train_cm = confusion_matrix(Y_train, y_train_pred,labels=['accept','reject'])\n",
+    "    model_name.append(model)\n",
+    "    model_train_acc.append(train_accuracy)\n",
+    "    model_test_accuracy.append(test_accuracy)\n",
+    "    model_test_f1.append(test_f1_score)\n",
+    "    model_train_f1.append(train_f1_score)\n",
+    "    return [train_cm,test_cm,train_accuracy,test_accuracy,train_f1_score, test_f1_score, prob_train,prob_test, y_pred,y_train_pred, model,sc]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model_name=[]\n",
+    "model_train_acc=[]\n",
+    "model_test_accuracy=[]\n",
+    "model_train_f1=[]\n",
+    "model_test_f1=[]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "['314', '168', '146', '109.0', '3.26', '13', '0', '66']\n",
+      "Type: <class 'list'>\n",
+      "Length: 8\n",
+      "314\n",
+      "168\n",
+      "146\n",
+      "109.0\n",
+      "3.26\n",
+      "13\n",
+      "0\n",
+      "66\n",
+      "314.0\n",
+      "168.0\n",
+      "146.0\n",
+      "109.0\n",
+      "3.26\n",
+      "13.0\n",
+      "0.0\n",
+      "66.0\n",
+      "      gre_score  gre_score_quant  gre_score_verbal  test_score_toefl  \\\n",
+      "4603        314              168               146             109.0   \n",
+      "7734        300              151               149             101.0   \n",
+      "828         306              163               143             101.0   \n",
+      "5472        313              164               149             108.0   \n",
+      "6108        309              161               148             106.0   \n",
+      "\n",
+      "      undergraduation_score  work_ex  papers_published  ranking  \n",
+      "4603                   3.26       13                 0       66  \n",
+      "7734                   2.72       32                 0       30  \n",
+      "828                    2.38       45                 0       89  \n",
+      "5472                   2.35       21                 0       35  \n",
+      "6108                   2.10       53                 0      118  \n",
+      "      gre_score  gre_score_quant  gre_score_verbal  test_score_toefl  \\\n",
+      "5075        314              158               156             111.0   \n",
+      "2252        321              161               160             118.0   \n",
+      "5514        325              168               157             105.0   \n",
+      "5767        322              164               158              75.0   \n",
+      "4064        311              165               146              96.0   \n",
+      "...         ...              ...               ...               ...   \n",
+      "5438        312              163               149             100.0   \n",
+      "4859        326              170               156             109.0   \n",
+      "4303        323              165               158             114.0   \n",
+      "1364        310              166               144             104.0   \n",
+      "8310        324              169               155             109.0   \n",
+      "\n",
+      "      undergraduation_score  work_ex  papers_published  ranking  \n",
+      "5075                   3.33       23                 0       25  \n",
+      "2252                   3.12        1                 2       10  \n",
+      "5514                   2.95       28                 0       35  \n",
+      "5767                   2.65       30                 0      118  \n",
+      "4064                   2.50        5                 0       15  \n",
+      "...                     ...      ...               ...      ...  \n",
+      "5438                   2.88       27                 0       35  \n",
+      "4859                   2.80        0                 3       25  \n",
+      "4303                   2.75        8                 3       15  \n",
+      "1364                   3.17        5                 3       97  \n",
+      "8310                   3.33       21                 3       16  \n",
+      "\n",
+      "[7012 rows x 8 columns]\n",
+      "['accept']\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.svm import SVC\n",
+    "import pickle\n",
+    "import numpy as np\n",
+    "svc_model=SVC(gamma='auto',probability=True)\n",
+    "sc = StandardScaler()\n",
+    "X_train = training[numerical_features] \n",
+    "#X_test= testing[numerical_features]\n",
+    "#Y_train = training['status']\n",
+    "#Y_test = testing['status']\n",
+    "\n",
+    "#sc.fit(X_train)\n",
+    "#X_train = sc.transform(X_train)\n",
+    "#X_test = sc.transform(X_test) \n",
+    "#svc_model.fit(X_train, Y_train)\n",
+    "\n",
+    "string='314 168 146 109.0 3.26 13 0 66'\n",
+    "    \n",
+    "\n",
+    "data = string.split()\n",
+    "print(data)\n",
+    "print(\"Type:\", type(data))\n",
+    "print(\"Length:\", len(data))\n",
+    "\n",
+    "for i in range(8):\n",
+    "    print(data[i])\n",
+    "data = [float(x.strip()) for x in data]\n",
+    "\n",
+    "for i in range(8):\n",
+    "    print(data[i])\n",
+    "\n",
+    "data_np = np.asarray(data, dtype = float)\n",
+    "data_np = data_np.reshape(1,-1)\n",
+    "    #out, acc, t = predict_svm(clf, data_np)\n",
+    "sc.fit_transform(X_train) \n",
+    "\n",
+    "inp = sc.transform(data_np)\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    " \n",
+    "\n",
+    "\n",
+    "\n",
+    "   \n",
+    "#y_pred = svc_model_results[11].predict(X_test[0:1])\n",
+    "svc_model_results=get_result(svc_model,training[numerical_features],testing[numerical_features],training['status'],testing['status'])\n",
+    "y_pred = svc_model_results[10].predict(inp)\n",
+    "# save the model to disk\n",
+    "filename = 'svc_model.pickel'\n",
+    "pickle.dump(svc_model_results[11], open(filename, 'wb'))\n",
+    "#print(X_test)\n",
+    "\n",
+    "print(training[numerical_features])\n",
+    "print(y_pred)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "test_accuracy: 0.6449957228400343\n",
+      "train_accuracy: 0.6779806046776954\n",
+      "test_f1_score: 0.5726055612770341\n",
+      "train_f1_score: 0.609477689380837\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('test_accuracy:',svc_model_results[3])\n",
+    "print('train_accuracy:',svc_model_results[2])\n",
+    "print('test_f1_score:',svc_model_results[5])\n",
+    "print('train_f1_score:',svc_model_results[4])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "      gre_score  gre_score_quant  gre_score_verbal  test_score_toefl  \\\n",
+      "4603        314              168               146             109.0   \n",
+      "7734        300              151               149             101.0   \n",
+      "828         306              163               143             101.0   \n",
+      "5472        313              164               149             108.0   \n",
+      "6108        309              161               148             106.0   \n",
+      "\n",
+      "      undergraduation_score  work_ex  papers_published  ranking  \n",
+      "4603                   3.26       13                 0       66  \n",
+      "7734                   2.72       32                 0       30  \n",
+      "828                    2.38       45                 0       89  \n",
+      "5472                   2.35       21                 0       35  \n",
+      "6108                   2.10       53                 0      118  \n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.tree import DecisionTreeClassifier\n",
+    "decision_tree_model=DecisionTreeClassifier()\n",
+    "\n",
+    "decision_tree_model_results=get_result(decision_tree_model,training[numerical_features],testing[numerical_features],training['status'],testing['status'])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "test_accuracy: 0.6642429426860564\n",
+      "train_accuracy: 1.0\n",
+      "test_f1_score: 0.6380820654679576\n",
+      "train_f1_score: 1.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('test_accuracy:',decision_tree_model_results[3])\n",
+    "print('train_accuracy:',decision_tree_model_results[2])\n",
+    "print('test_f1_score:',decision_tree_model_results[5])\n",
+    "print('train_f1_score:',decision_tree_model_results[4])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "      gre_score  gre_score_quant  gre_score_verbal  test_score_toefl  \\\n",
+      "4603        314              168               146             109.0   \n",
+      "7734        300              151               149             101.0   \n",
+      "828         306              163               143             101.0   \n",
+      "5472        313              164               149             108.0   \n",
+      "6108        309              161               148             106.0   \n",
+      "\n",
+      "      undergraduation_score  work_ex  papers_published  ranking  \n",
+      "4603                   3.26       13                 0       66  \n",
+      "7734                   2.72       32                 0       30  \n",
+      "828                    2.38       45                 0       89  \n",
+      "5472                   2.35       21                 0       35  \n",
+      "6108                   2.10       53                 0      118  \n",
+      "test_accuracy: 0.7061591103507271\n",
+      "train_accuracy: 0.9864517969195664\n",
+      "test_f1_score: 0.6953436807095345\n",
+      "train_f1_score: 0.9855337292523223\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "random_forest_model=RandomForestClassifier(n_estimators=10)\n",
+    "\n",
+    "random_forest_model_results=get_result(random_forest_model,training[numerical_features],testing[numerical_features],training['status'],testing['status'])\n",
+    "\n",
+    "print('test_accuracy:',random_forest_model_results[3])\n",
+    "print('train_accuracy:',random_forest_model_results[2])\n",
+    "print('test_f1_score:',random_forest_model_results[5])\n",
+    "print('train_f1_score:',random_forest_model_results[4])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
